@@ -1,14 +1,14 @@
 import com.android.build.api.dsl.ApplicationExtension
 
-// Compile against base morphe-patches' extension classes; nothing here is shipped.
-// Precompile base before yavot: `:extensions:youtube:compileReleaseKotlin :compileReleaseJavaWithJavac`.
+// Compile against the published compatible host extension classes; nothing here is shipped.
+// A host satisfying COMPATIBILITY.md must be built first.
 val baseExtDir = rootProject.file("../morphe-patches/extensions")
 val baseClassesStaging = layout.buildDirectory.dir("base-classes-staging")
 
 // AGP rejects raw classes.jar via compileOnly(files()), so we unpack lib jars +
 // copy app-module class dirs into one staging tree.
 val stageBaseClasses = tasks.register<Sync>("stageBaseClasses") {
-    description = "Stages base morphe-patches' compiled extension classes into a single dir for compileOnly."
+    description = "Stages compatible host extension classes into a single dir for compileOnly."
     group = "build"
     val libJars = fileTree(baseExtDir) {
         include("**/build/intermediates/compile_library_classes_jar/release/**/*.jar")
@@ -25,6 +25,8 @@ val stageBaseClasses = tasks.register<Sync>("stageBaseClasses") {
 }
 
 dependencies {
+    testImplementation("junit:junit:4.13.2")
+
     compileOnly(libs.annotation)
     compileOnly(libs.morphe.extensions.library)
 

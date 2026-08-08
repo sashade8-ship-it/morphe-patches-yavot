@@ -51,6 +51,20 @@ any patch of morphe-patches. Everything goes through the patched app instead, us
 Only the `AudioTrack.setVolume` hook that ducks the original audio is patched directly, using a
 fingerprint of this bundle.
 
+## Compatibility gate
+
+This development branch is **not compatible with stock upstream Morphe Patches**. Before it
+changes an APK, the patch verifies `AddOnApi.API_VERSION` and the complete v1 coordinator surface:
+`registerVoiceOverEngine`, activation/deactivation, active-owner lookup, engine-state listener,
+and the player/video hook methods. Runtime registration checks API version 1 again before any
+listener or engine registration.
+
+No published upstream base currently satisfies this contract. The coordinator remains exclusively
+in the host bundle; this add-on does not embed or replace it. The upstream AddOnApi PR head
+`6d2cb3e30f78be25b29225d509a0e692fb2c8a07` lacks the coordinator and is rejected. Release and
+host-integrated build verification remain blocked until a minimal coordinator commit rebased on
+that head is published; its full immutable SHA can then be pinned here.
+
 ## Build
 
 Requires a sibling checkout of `morphe-patcher`, `morphe-patches-library`, and — for the extension

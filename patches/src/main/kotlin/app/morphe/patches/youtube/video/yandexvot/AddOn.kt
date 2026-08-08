@@ -21,6 +21,8 @@ import app.morphe.patcher.patch.ResourcePatchContext
 import app.morphe.util.forEachChildElement
 import app.morphe.util.getNode
 import app.morphe.util.inputStreamFromBundledResource
+import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.iface.value.IntEncodedValue
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
@@ -31,6 +33,59 @@ private const val ADD_ON_MANAGER_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/youtube/addon/AddOnManager;"
 
 private const val ADD_ON_MANAGER_REGISTER_METHOD_NAME = "registerAddOns"
+
+private const val ADD_ON_API_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/youtube/addon/AddOnApi;"
+
+private const val REQUIRED_ADD_ON_API_VERSION = 1
+
+/**
+ * Validates the complete host surface this add-on relies on before its registration call is
+ * inserted.  The coordinator deliberately remains in the base bundle: shipping a replacement
+ * here would create two competing owners for the official and Yandex engines.
+ */
+private fun BytecodePatchContext.requireCompatibleVoiceOverCoordinator() {
+    val api = mutableClassDefByOrNull(ADD_ON_API_CLASS_DESCRIPTOR)
+        ?: throw PatchException("Incompatible host: AddOnApi v$REQUIRED_ADD_ON_API_VERSION is missing.")
+
+    val requiredMethods = setOf(
+        "registerVoiceOverEngine(Ljava/lang/String;Ljava/lang/Runnable;)Z",
+        "activateVoiceOverEngine(Ljava/lang/String;)Z",
+        "deactivateVoiceOverEngine(Ljava/lang/String;)Z",
+        "getActiveVoiceOverEngineId()Ljava/lang/String;",
+        "addVoiceOverEngineListener(Ljava/util/function/Consumer;)V",
+        "addNewVideoStartedListener(Ljava/lang/Runnable;)V",
+        "addPlayerOverlayButtonsListener(Ljava/util/function/Consumer;)V",
+        "addLegacyPlayerControlsListener(Ljava/util/function/Consumer;)V",
+        "addVideoIdListener(Ljava/util/function/Consumer;)V",
+        "addVideoTimeListener(Ljava/util/function/LongConsumer;)V",
+        "addVideoStateListener(Ljava/util/function/Consumer;)V",
+    )
+    val incompatibleMethods = requiredMethods.filter { requiredDescriptor ->
+        val method = api.methods.firstOrNull {
+            it.name + "(" + it.parameters.joinToString("") + ")" + it.returnType == requiredDescriptor
+        }
+        method == null ||
+                !AccessFlags.PUBLIC.isSet(method.accessFlags) ||
+                !AccessFlags.STATIC.isSet(method.accessFlags)
+    }
+    val apiVersion = api.fields.singleOrNull { field ->
+        field.name == "API_VERSION" && field.type == "I"
+    }
+    val hasExactApiVersion = apiVersion != null &&
+            AccessFlags.PUBLIC.isSet(apiVersion.accessFlags) &&
+            AccessFlags.STATIC.isSet(apiVersion.accessFlags) &&
+            AccessFlags.FINAL.isSet(apiVersion.accessFlags) &&
+            (apiVersion.initialValue as? IntEncodedValue)?.value == REQUIRED_ADD_ON_API_VERSION
+    if (!hasExactApiVersion || incompatibleMethods.isNotEmpty()) {
+        throw PatchException(
+            "Incompatible host: requires AddOnApi v$REQUIRED_ADD_ON_API_VERSION with the " +
+                    "public static VoiceOverEngineCoordinator contract and public static final " +
+                    "API_VERSION=$REQUIRED_ADD_ON_API_VERSION; invalid " +
+                    incompatibleMethods.sorted().joinToString().ifEmpty { "API_VERSION" }
+        )
+    }
+}
 
 /**
  * File the Morphe settings patch reads add-on preference declarations from.
@@ -71,8 +126,12 @@ internal fun registerAddOn(registrationMethodDescriptor: String) {
             """
         )
 
+    requireCompatibleVoiceOverCoordinator()
+
     val registerMethod = addOnManagerClass.methods.firstOrNull {
-        it.name == ADD_ON_MANAGER_REGISTER_METHOD_NAME && it.parameters.isEmpty()
+        it.name == ADD_ON_MANAGER_REGISTER_METHOD_NAME &&
+                it.returnType == "V" &&
+                it.parameters.isEmpty()
     } ?: throw PatchException(
         "Could not find $ADD_ON_MANAGER_REGISTER_METHOD_NAME(). " +
                 "The installed Morphe Patches version is not compatible with this add-on."

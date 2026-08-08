@@ -199,7 +199,7 @@ public class YandexVotAuthWebViewDialog extends Dialog {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
-                Logger.printDebug(() -> "VotAuthWebView: shouldOverrideUrlLoading " + url);
+                Logger.printDebug(() -> "VotAuthWebView: auth callback received");
 
                 // Intercept the callback URL — Yandex redirects here after auth
                 if (url.contains(CALLBACK_PATH)) {
@@ -260,7 +260,7 @@ public class YandexVotAuthWebViewDialog extends Dialog {
             public void onReceivedError(WebView view, android.webkit.WebResourceRequest request,
                                         android.webkit.WebResourceError error) {
                 super.onReceivedError(view, request, error);
-                Logger.printDebug(() -> "VotAuthWebView: error loading page: " + error.getDescription());
+                Logger.printDebug(() -> "VotAuthWebView: error loading page");
             }
         });
 
