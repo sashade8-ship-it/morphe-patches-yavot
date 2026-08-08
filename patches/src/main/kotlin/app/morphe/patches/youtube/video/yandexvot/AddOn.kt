@@ -148,7 +148,7 @@ internal fun registerAddOn(registrationMethodDescriptor: String) {
             """
         )
 
-    requireCompatibleVoiceOverCoordinator()
+    context.requireCompatibleVoiceOverCoordinator()
 
     val registerMethod = addOnManagerClass.methods.firstOrNull {
         it.name == ADD_ON_MANAGER_REGISTER_METHOD_NAME &&
