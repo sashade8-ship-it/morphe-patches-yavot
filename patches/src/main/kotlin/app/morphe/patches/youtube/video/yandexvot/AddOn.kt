@@ -39,6 +39,13 @@ private const val ADD_ON_API_CLASS_DESCRIPTOR =
 
 private const val REQUIRED_ADD_ON_API_VERSION = 1
 
+private const val PLAYER_OVERLAY_BUTTON_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/youtube/videoplayer/PlayerOverlayButton;"
+
+private const val REQUIRED_CUSTOM_PLAYER_OVERLAY_BUTTON_DESCRIPTOR =
+    "addButton(Landroid/view/View;Landroid/widget/ImageView;Ljava/lang/String;" +
+            "Landroid/view/View\$OnClickListener;Landroid/view/View\$OnLongClickListener;)Landroid/widget/ImageView;"
+
 /**
  * Validates the complete host surface this add-on relies on before its registration call is
  * inserted.  The coordinator deliberately remains in the base bundle: shipping a replacement
@@ -83,6 +90,21 @@ private fun BytecodePatchContext.requireCompatibleVoiceOverCoordinator() {
                     "public static VoiceOverEngineCoordinator contract and public static final " +
                     "API_VERSION=$REQUIRED_ADD_ON_API_VERSION; invalid " +
                     incompatibleMethods.sorted().joinToString().ifEmpty { "API_VERSION" }
+        )
+    }
+
+    val playerOverlayButton = mutableClassDefByOrNull(PLAYER_OVERLAY_BUTTON_CLASS_DESCRIPTOR)
+        ?: throw PatchException("Incompatible host: PlayerOverlayButton is missing.")
+    val customOverlayMethod = playerOverlayButton.methods.firstOrNull {
+        it.name + "(" + it.parameters.joinToString("") + ")" + it.returnType ==
+                REQUIRED_CUSTOM_PLAYER_OVERLAY_BUTTON_DESCRIPTOR
+    }
+    if (customOverlayMethod == null
+            || !AccessFlags.PUBLIC.isSet(customOverlayMethod.accessFlags)
+            || !AccessFlags.STATIC.isSet(customOverlayMethod.accessFlags)) {
+        throw PatchException(
+            "Incompatible host: requires public static PlayerOverlayButton." +
+                    REQUIRED_CUSTOM_PLAYER_OVERLAY_BUTTON_DESCRIPTOR
         )
     }
 }
