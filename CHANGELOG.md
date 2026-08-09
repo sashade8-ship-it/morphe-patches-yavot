@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/sashade8-ship-it/morphe-patches-yavot/compare/v1.1.0...v1.1.1) (2026-08-09)
+
+### 🐛 Bug Fixes
+
+* generate release checksum after final MPP build ([b8d3a5e](https://github.com/sashade8-ship-it/morphe-patches-yavot/commit/b8d3a5e9c8b1a7ee2007c534bd2ecb77f4d547cc))
+
 ## [1.1.0](https://github.com/sashade8-ship-it/morphe-patches-yavot/compare/v1.0.2...v1.1.0) (2026-08-09)
 
 ### 🐛 Bug Fixes
