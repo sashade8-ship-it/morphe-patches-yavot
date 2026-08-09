@@ -2,7 +2,6 @@ package app.morphe.extension.youtube.videoplayer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -21,25 +20,31 @@ public class YandexVotTimerResourceTest {
     );
 
     @Test
-    public void timerResourceKeysExistAndFormatCompactValues() throws IOException {
-        String strings = readStrings(findBaseStrings());
-
-        assertEquals("1 min", format(strings, YandexVotButton.YandexCountdownButton.TIMER_MINUTES_RESOURCE, 1));
-        assertEquals("59 sec", format(strings, YandexVotButton.YandexCountdownButton.TIMER_SECONDS_RESOURCE, 59));
-    }
-
-    @Test
-    public void timerKeysArePresentInEveryPackagedLocale() throws IOException {
+    public void timerResourceKeysFormatCompactValuesInEveryPackagedLocale() throws IOException {
         Path baseStrings = findBaseStrings();
         Path resourcesRoot = baseStrings.getParent().getParent().getParent();
-        for (String locale : new String[] {"values", "values-ru-rRU", "values-uk-rUA"}) {
+        for (String[] locale : new String[][] {
+                {"values", "1m", "59s"},
+                {"values-ru-rRU", "1м", "59с"},
+                {"values-uk-rUA", "1хв", "59с"}
+        }) {
             String strings = readStrings(
-                    resourcesRoot.resolve(locale).resolve("youtube").resolve("strings.xml")
+                    resourcesRoot.resolve(locale[0]).resolve("youtube").resolve("strings.xml")
             );
-            assertTrue(strings.contains("name=\""
-                    + YandexVotButton.YandexCountdownButton.TIMER_MINUTES_RESOURCE + "\""));
-            assertTrue(strings.contains("name=\""
-                    + YandexVotButton.YandexCountdownButton.TIMER_SECONDS_RESOURCE + "\""));
+            String minutes = format(
+                    strings,
+                    YandexVotButton.YandexCountdownButton.TIMER_MINUTES_RESOURCE,
+                    1
+            );
+            String seconds = format(
+                    strings,
+                    YandexVotButton.YandexCountdownButton.TIMER_SECONDS_RESOURCE,
+                    59
+            );
+            assertEquals(locale[1], minutes);
+            assertEquals(locale[2], seconds);
+            assertFalse("Timer text must be space-free", minutes.contains(" "));
+            assertFalse("Timer text must be space-free", seconds.contains(" "));
         }
     }
 
