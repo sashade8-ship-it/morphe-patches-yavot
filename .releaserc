@@ -39,7 +39,8 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "set -eu; mpp_directory=\"patches/build/libs\"; mpp_filename=\"patches-${nextRelease.version}.mpp\"; mpp_path=\"$mpp_directory/$mpp_filename\"; checksum_path=\"$mpp_path.sha256\"; rm -f \"$mpp_path\" \"$checksum_path\"; ./gradlew clean generatePatchesList; test -s \"$mpp_path\"; (cd \"$mpp_directory\" && sha256sum -- \"$mpp_filename\") > \"$checksum_path\"; jq '.version=\"${nextRelease.version}\"' patches-list.json > patches-list.json.tmp && mv patches-list.json.tmp patches-list.json && python3 .github/scripts/generate_patches_readme.py $GITHUB_REPOSITORY $GITHUB_REF_NAME patches-list.json README.md"
+        "prepareCmd": "set -eu; mpp_directory=\"patches/build/libs\"; mpp_filename=\"patches-${nextRelease.version}.mpp\"; mpp_path=\"$mpp_directory/$mpp_filename\"; rm -f \"$mpp_path\" \"$mpp_path.sha256\"; ./gradlew clean generatePatchesList; test -s \"$mpp_path\"; jq '.version=\"${nextRelease.version}\"' patches-list.json > patches-list.json.tmp && mv patches-list.json.tmp patches-list.json && python3 .github/scripts/generate_patches_readme.py $GITHUB_REPOSITORY $GITHUB_REF_NAME patches-list.json README.md",
+        "publishCmd": "set -eu; mpp_directory=\"patches/build/libs\"; mpp_filename=\"patches-${nextRelease.version}.mpp\"; mpp_path=\"$mpp_directory/$mpp_filename\"; checksum_path=\"$mpp_path.sha256\"; test -s \"$mpp_path\"; rm -f \"$checksum_path\"; (cd \"$mpp_directory\" && sha256sum -- \"$mpp_filename\") > \"$checksum_path\""
       }
     ],
     [
