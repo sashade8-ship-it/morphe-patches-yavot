@@ -50,11 +50,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: 'lts/*'
+          # semantic-release 25 supports Node >= 22.14.0. Keep the build runtime exact.
+          node-version: '22.16.0'
 
       - name: Install npm dependencies
         working-directory: morphe-patches-yavot
-        run: npm install
+        run: npm ci
 
       # Populate base's intermediates dirs that the yavot extension compileOnly's against.
       # Only the extension classes are needed, the patch code of yavot is independent of base.

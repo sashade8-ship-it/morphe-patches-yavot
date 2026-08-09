@@ -110,7 +110,7 @@ Compatibility dependencies: [Morphe Patches](https://github.com/MorpheApp/morphe
 
 ## Release and source distribution
 
-Each YaVoT release contains a uniquely named `patches-<version>.mpp` and its SHA-256 checksum. The MPP itself includes `META-INF/LICENSE` and `META-INF/NOTICE`; the same files and complete corresponding source are available in this repository. Preserve the notices when redistributing YaVoT.
+Each YaVoT release contains a uniquely named `patches-<version>.mpp` and a matching `patches-<version>.mpp.sha256`. The checksum file is generated from that release MPP immediately after its clean build and can be verified with `sha256sum --check patches-<version>.mpp.sha256`. The MPP itself includes `META-INF/LICENSE` and `META-INF/NOTICE`; the same files and complete corresponding source are available in this repository. Preserve the notices when redistributing YaVoT.
 
 ## Patches
 
