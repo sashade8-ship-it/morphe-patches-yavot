@@ -72,19 +72,19 @@ private const val EXTENSION_ORIGINAL_VOLUME_CLASS =
     "Lapp/morphe/extension/youtube/patches/yandexvot/YandexVotOriginalVolumePatch;"
 
 /**
- * Key of the built in voice over translation preference of Morphe Patches.
+ * Key of the built-in voice over translation preference of Morphe Patches.
  * This add-on is shown right next to it.
  */
 private const val VOICE_OVER_TRANSLATION_SCREEN_KEY = "morphe_vot_screen"
 
 /**
  * Key of the preference of this add-on. Morphe settings screens sort their preferences by key,
- * so the key has to sort right after the built in one to stay next to it.
+ * so the key has to sort right after the built-in one to stay next to it.
  */
 private const val YANDEX_SCREEN_KEY = "${VOICE_OVER_TRANSLATION_SCREEN_KEY}_yandex"
 
 /**
- * Screen the preference is added to if the built in voice over translation patch is not applied.
+ * Screen the preference is added to if the built-in voice over translation patch is not applied.
  */
 private const val VIDEO_SCREEN_KEY = "morphe_settings_screen_12_video"
 
@@ -184,10 +184,10 @@ private val yandexVoiceOverTranslationResourcePatch = resourcePatch {
                     noTitlePreferenceCategory(
                         key = "morphe_yandex_vot_general_category",
                         preferences = listOf(
-                            switchPreference("morphe_yandex_vot_enabled"),
+                            switchPreference("morphe_yandex_vot_enabled", summary = true),
                             listPreference("morphe_yandex_vot_source_language"),
                             listPreference("morphe_yandex_vot_target_language"),
-                            switchPreference("morphe_yandex_vot_use_live_voices"),
+                            switchPreference("morphe_yandex_vot_use_live_voices", summary = true),
                             seekBarPreference("morphe_yandex_vot_translation_volume"),
                             seekBarPreference("morphe_yandex_vot_original_audio_volume"),
                             nonInteractivePreference(

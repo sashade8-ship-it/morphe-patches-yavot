@@ -40,6 +40,8 @@
     <string name="morphe_yandex_vot_stream_ready">Translation ready, playing</string>
     <string name="morphe_yandex_vot_time_sec">%d sec</string>
     <string name="morphe_yandex_vot_time_min">%d min</string>
+    <string name="dualvot_yandex_button_time_seconds">%ds</string>
+    <string name="dualvot_yandex_button_time_minutes">%dm</string>
     <string name="morphe_yandex_vot_live_voices_unavailable">Live voices unavailable, using standard</string>
     <string name="morphe_yandex_vot_lang_auto">Auto-detect</string>
     <string name="morphe_yandex_vot_oauth_token_title">Yandex OAuth token</string>

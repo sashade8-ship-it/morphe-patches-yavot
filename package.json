@@ -1,13 +1,13 @@
 {
-  "name": "morphe-patches-yavot",
-  "description": "Yandex voice-over translation add-on for Morphe Patches",
+  "name": "yavot-patches",
+  "description": "YaVoT, an independent Yandex voice-over translation add-on compatible with Morphe Patches",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MarcaDian/morphe-patches-yavot.git"
+    "url": "git+https://github.com/sashade8-ship-it/morphe-patches-yavot.git"
   },
   "license": "GPL-3.0",
   "devDependencies": {
-    "@MorpheApp/changelog": "git+https://github.com/MorpheApp/changelog.git#bundle",
+    "@MorpheApp/changelog": "git+https://github.com/MorpheApp/changelog.git#caa1e931730f097bb6c4dee636b01c2c24ccd72d",
     "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
     "conventional-changelog-conventionalcommits": "^9.3.1",

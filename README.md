@@ -1,8 +1,10 @@
-# Morphe Patches: Yandex VoT add-on
+# YaVoT
 
-Yandex voice-over translation add-on for [Morphe Patches](https://github.com/MorpheApp/morphe-patches).
+YaVoT is an independent, unofficial Yandex voice-over translation add-on that is compatible with [Morphe Patches](https://github.com/MorpheApp/morphe-patches). It is not a Morphe product and must be loaded alongside an official Morphe bundle.
 
-This bundle ships the `Voice Over Translation (Yandex)` patch for YouTube. It is meant to be loaded **alongside** the base `morphe-patches` bundle in Morphe Manager, not as a replacement. All classes, resources, preference keys and extension descriptors are renamed with a `yandex_vot` / `YandexVot*` prefix so nothing collides with the built-in Google-TTS-based VoT patch.
+Version `1.1.0` is built and tested against the immutable official Morphe Patches `v1.40.0-dev.1` commit `0b2ac378feb6b64fb7f1125abdccb0ff7d9125ff`; see [COMPATIBILITY.md](COMPATIBILITY.md).
+
+This bundle ships the `Voice Over Translation (Yandex)` patch for YouTube. It is meant to be loaded **alongside** the official base bundle in Morphe Manager, not as a replacement. All classes, resources, preference keys and extension descriptors are renamed with a `yandex_vot` / `YandexVot*` prefix so nothing collides with the built-in Google-TTS-based VoT patch.
 
 ## Install
 
@@ -51,6 +53,18 @@ any patch of morphe-patches. Everything goes through the patched app instead, us
 Only the `AudioTrack.setVolume` hook that ducks the original audio is patched directly, using a
 fingerprint of this bundle.
 
+## Compatibility gate
+
+YaVoT `1.1.0` is compatible with official Morphe Patches `v1.40.0-dev.1` at immutable commit `0b2ac378feb6b64fb7f1125abdccb0ff7d9125ff`. Before it changes an APK,
+the patch verifies the exact public static `AddOnManager`/generic `AddOnApi` hooks it uses and the
+official `VoiceOverTranslationPatch` callbacks it invokes. It fails closed before adding YaVoT
+registration when any required signature is absent.
+
+YaVoT coordinates directly with the official translation implementation: immediately before
+Yandex starts it deactivates the official session, and the one-time official state callback cancels
+Yandex when the official session becomes active. This requires no custom AddOnApi version or
+engine-owner API.
+
 ## Build
 
 Requires a sibling checkout of `morphe-patcher`, `morphe-patches-library`, and — for the extension
@@ -70,6 +84,9 @@ extension code compiles against the compiled extension classes of morphe-patches
 
 ```
 ../morphe-patches/gradlew :extensions:youtube:compileReleaseKotlin :extensions:youtube:compileReleaseJavaWithJavac
+
+# Or use another built compatible host checkout without changing this repository:
+./gradlew :extensions:youtube:compileReleaseJavaWithJavac -PbaseExtensionsDir=../morphe-official-1.40-test/extensions
 ```
 
 ## What is bundled
@@ -83,15 +100,22 @@ extension code compiles against the compiled extension classes of morphe-patches
 ## Credits
 
 Yandex VoT implementation:
+- [MarcaDian](https://github.com/MarcaDian) — original YaVoT add-on repository and v1.0.4 baseline
 - [Jav1x](https://github.com/Jav1x) — original author of the patch, Morphe port
 - [anddea](https://github.com/anddea) — revanced-patches port
+- Dual VoT maintainers — timing v3, diagnostic hardening, and official/YaVoT coordination adaptations
+- YaVoT maintainers: [sashade8-ship-it](https://github.com/sashade8-ship-it)
 
-Base bundle: [Morphe Patches](https://github.com/MorpheApp/morphe-patches), [Morphe Manager](https://github.com/MorpheApp/morphe-manager), [Morphe Patcher](https://github.com/MorpheApp/morphe-patcher).
+Compatibility dependencies: [Morphe Patches](https://github.com/MorpheApp/morphe-patches), [Morphe Manager](https://github.com/MorpheApp/morphe-manager), [Morphe Patcher](https://github.com/MorpheApp/morphe-patcher).
+
+## Release and source distribution
+
+Each YaVoT release contains a uniquely named `patches-<version>.mpp` and a matching `patches-<version>.mpp.sha256`. The checksum file is generated from that release MPP immediately after its clean build and can be verified with `sha256sum --check patches-<version>.mpp.sha256`. The MPP itself includes `META-INF/LICENSE` and `META-INF/NOTICE`; the same files and complete corresponding source are available in this repository. Preserve the notices when redistributing YaVoT.
 
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.2](https://github.com/MarcaDian/morphe-patches-yavot/releases/tag/v1.0.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;1 patches total
+> **[v1.1.0](https://github.com/sashade8-ship-it/morphe-patches-yavot/releases/tag/v1.1.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;1 patches total
 <details open>
 <summary>📦 YouTube&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>

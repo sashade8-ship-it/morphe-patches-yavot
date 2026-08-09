@@ -9,6 +9,7 @@
  *
  * Ported to morphe-patches: https://github.com/MorpheApp/morphe-patches
  * Modified by: Jav1x (https://github.com/Jav1x)
+ * Substantially modified by: YaVoT maintainers (sashade8-ship-it), 2026-08-09
  *
  * Licensed under the GNU General Public License v3.0.
  *
@@ -72,7 +73,7 @@ import app.morphe.extension.youtube.addon.AddOnApi;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.youtube.patches.yandexvot.YandexVoiceOverTranslationPatch;
 import app.morphe.extension.youtube.patches.yandexvot.YandexVoiceOverTranslationBottomSheet;
-import app.morphe.extension.youtube.patches.yandexvot.YandexVotAddOn;
+import app.morphe.extension.youtube.patches.yandexvot.YandexVotTiming;
 import app.morphe.extension.youtube.settings.YandexVotSettings;
 
 @SuppressWarnings("unused")
@@ -97,6 +98,21 @@ public final class YandexVotButton {
         try {
             if (RESTORE_OLD_PLAYER_BUTTONS || !YandexVotSettings.YANDEX_VOT_ENABLED.get()) return;
             YandexVoiceOverTranslationPatch.addOnTranslationStateChangeCallback(STATE_REFRESH_CALLBACK);
+
+            // AddOnApi runs before the base bundle's remaining overlay hooks. Queue this one
+            // factory call so the host has first registered its native and built-in custom
+            // buttons. PlayerOverlayButton then assigns YaVoT the outermost custom-button slot
+            // using its own portrait/landscape spacing, source geometry and visibility handling.
+            // Do not copy coordinates or layout params here: that would bypass the public host
+            // contract and break when YouTube recreates its controls.
+            controlsView.post(() -> addOverlayButton(controlsView));
+        } catch (Exception ex) {
+            Logger.printException(() -> "YandexVotButton initializeButton failure", ex);
+        }
+    }
+
+    private static void addOverlayButton(View controlsView) {
+        try {
             YandexCountdownButton button = PlayerOverlayButton.addButton(
                     controlsView,
                     new YandexCountdownButton(controlsView.getContext()),
@@ -115,7 +131,7 @@ public final class YandexVotButton {
             }
             refreshActivatedState();
         } catch (Exception ex) {
-            Logger.printException(() -> "YandexVotButton initializeButton failure", ex);
+            Logger.printException(() -> "YandexVotButton addOverlayButton failure", ex);
         }
     }
 
@@ -130,7 +146,7 @@ public final class YandexVotButton {
             // bundle cannot add its own view to the controls layout. The slot is a plain button,
             // so the old player layout shows the icon without the countdown indicator.
             legacy = AddOnApi.createLegacyButton(
-                    YandexVotAddOn.ADD_ON_ID,
+                    "yandex_vot",
                     controlsView,
                     "morphe_yt_yandex_vot",
                     YandexVotSettings.YANDEX_VOT_ENABLED,
@@ -206,6 +222,9 @@ public final class YandexVotButton {
 
 
     public static final class YandexCountdownButton extends ImageView {
+        static final String TIMER_MINUTES_RESOURCE = "dualvot_yandex_button_time_minutes";
+        static final String TIMER_SECONDS_RESOURCE = "dualvot_yandex_button_time_seconds";
+
         private final Paint ringPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint textBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -446,10 +465,10 @@ public final class YandexVotButton {
         private static String formatTimerText(int seconds) {
             if (seconds <= 0) return "\u2026";
             if (seconds >= 60) {
-                int minutes = (seconds + 59) / 60;
-                return str("morphe_yandex_vot_button_time_minutes", minutes);
+                int minutes = YandexVotTiming.roundedDisplayMinutes(seconds);
+                return str(TIMER_MINUTES_RESOURCE, minutes);
             }
-            return str("morphe_yandex_vot_button_time_seconds", seconds);
+            return str(TIMER_SECONDS_RESOURCE, seconds);
         }
 
         private static int parseColor(String value) {

@@ -1,4 +1,12 @@
 /*
+ * Copyright (C) 2026 YaVoT maintainers (sashade8-ship-it)
+ *
+ * This file is part of YaVoT, an independent GPLv3 add-on compatible with
+ * Morphe Patches. It is a substantially modified add-on integration layer
+ * maintained by the YaVoT maintainers as of 2026-08-09.
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
  * Add-on support code for the Yandex VoT bundle.
  *
  * An add-on bundle is loaded by the patcher in its own class loader, so it cannot reference
@@ -21,6 +29,7 @@ import app.morphe.patcher.patch.ResourcePatchContext
 import app.morphe.util.forEachChildElement
 import app.morphe.util.getNode
 import app.morphe.util.inputStreamFromBundledResource
+import com.android.tools.smali.dexlib2.AccessFlags
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
@@ -31,6 +40,92 @@ private const val ADD_ON_MANAGER_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/youtube/addon/AddOnManager;"
 
 private const val ADD_ON_MANAGER_REGISTER_METHOD_NAME = "registerAddOns"
+
+private const val ADD_ON_API_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/youtube/addon/AddOnApi;"
+
+private const val VOICE_OVER_TRANSLATION_PATCH_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/youtube/patches/voiceovertranslation/VoiceOverTranslationPatch;"
+
+private const val PLAYER_OVERLAY_BUTTON_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/youtube/videoplayer/PlayerOverlayButton;"
+
+private const val REQUIRED_CUSTOM_PLAYER_OVERLAY_BUTTON_DESCRIPTOR =
+    "addButton(Landroid/view/View;Landroid/widget/ImageView;Ljava/lang/String;" +
+            "Landroid/view/View\$OnClickListener;Landroid/view/View\$OnLongClickListener;)Landroid/widget/ImageView;"
+
+/**
+ * Validates the exact public host surface this add-on invokes before its registration call is
+ * inserted. This stays fail-closed: a matching class name alone does not make a host compatible.
+ */
+private fun BytecodePatchContext.requireCompatibleHost() {
+    val api = mutableClassDefByOrNull(ADD_ON_API_CLASS_DESCRIPTOR)
+        ?: throw PatchException("Incompatible host: AddOnApi is missing.")
+
+    val requiredMethods = setOf(
+        "addNewVideoStartedListener(Ljava/lang/Runnable;)V",
+        "addPlayerOverlayButtonsListener(Ljava/util/function/Consumer;)V",
+        "addLegacyPlayerControlsListener(Ljava/util/function/Consumer;)V",
+        "addVideoIdListener(Ljava/util/function/Consumer;)V",
+        "addVideoTimeListener(Ljava/util/function/LongConsumer;)V",
+        "addVideoStateListener(Ljava/util/function/Consumer;)V",
+        "createLegacyButton(Ljava/lang/String;Landroid/view/View;Ljava/lang/String;" +
+                "Lapp/morphe/extension/shared/settings/BooleanSetting;" +
+                "Landroid/view/View\$OnClickListener;Landroid/view/View\$OnLongClickListener;)" +
+                "Lapp/morphe/extension/youtube/videoplayer/LegacyPlayerControlButton;",
+    )
+    val incompatibleMethods = requiredMethods.filter { requiredDescriptor ->
+        val method = api.methods.firstOrNull {
+            it.name + "(" + it.parameters.joinToString("") + ")" + it.returnType == requiredDescriptor
+        }
+        method == null ||
+                !AccessFlags.PUBLIC.isSet(method.accessFlags) ||
+                !AccessFlags.STATIC.isSet(method.accessFlags)
+    }
+    if (incompatibleMethods.isNotEmpty()) {
+        throw PatchException(
+            "Incompatible host: requires public static AddOnApi hooks; invalid " +
+                    incompatibleMethods.sorted().joinToString()
+        )
+    }
+
+    val officialTranslation = mutableClassDefByOrNull(VOICE_OVER_TRANSLATION_PATCH_CLASS_DESCRIPTOR)
+        ?: throw PatchException("Incompatible host: VoiceOverTranslationPatch is missing.")
+    val requiredOfficialMethods = setOf(
+        "addOnTranslationStateChangeCallback(Ljava/lang/Runnable;)V",
+        "isSessionEnabled()Z",
+        "deactivateTranslation()V",
+    )
+    val incompatibleOfficialMethods = requiredOfficialMethods.filter { requiredDescriptor ->
+        val method = officialTranslation.methods.firstOrNull {
+            it.name + "(" + it.parameters.joinToString("") + ")" + it.returnType == requiredDescriptor
+        }
+        method == null ||
+                !AccessFlags.PUBLIC.isSet(method.accessFlags) ||
+                !AccessFlags.STATIC.isSet(method.accessFlags)
+    }
+    if (incompatibleOfficialMethods.isNotEmpty()) {
+        throw PatchException(
+            "Incompatible host: requires public static VoiceOverTranslationPatch hooks; invalid " +
+                    incompatibleOfficialMethods.sorted().joinToString()
+        )
+    }
+
+    val playerOverlayButton = mutableClassDefByOrNull(PLAYER_OVERLAY_BUTTON_CLASS_DESCRIPTOR)
+        ?: throw PatchException("Incompatible host: PlayerOverlayButton is missing.")
+    val customOverlayMethod = playerOverlayButton.methods.firstOrNull {
+        it.name + "(" + it.parameters.joinToString("") + ")" + it.returnType ==
+                REQUIRED_CUSTOM_PLAYER_OVERLAY_BUTTON_DESCRIPTOR
+    }
+    if (customOverlayMethod == null
+            || !AccessFlags.PUBLIC.isSet(customOverlayMethod.accessFlags)
+            || !AccessFlags.STATIC.isSet(customOverlayMethod.accessFlags)) {
+        throw PatchException(
+            "Incompatible host: requires public static PlayerOverlayButton." +
+                    REQUIRED_CUSTOM_PLAYER_OVERLAY_BUTTON_DESCRIPTOR
+        )
+    }
+}
 
 /**
  * File the Morphe settings patch reads add-on preference declarations from.
@@ -71,8 +166,14 @@ internal fun registerAddOn(registrationMethodDescriptor: String) {
             """
         )
 
+    context.requireCompatibleHost()
+
     val registerMethod = addOnManagerClass.methods.firstOrNull {
-        it.name == ADD_ON_MANAGER_REGISTER_METHOD_NAME && it.parameters.isEmpty()
+        it.name == ADD_ON_MANAGER_REGISTER_METHOD_NAME &&
+                it.returnType == "V" &&
+                it.parameters.isEmpty() &&
+                AccessFlags.PUBLIC.isSet(it.accessFlags) &&
+                AccessFlags.STATIC.isSet(it.accessFlags)
     } ?: throw PatchException(
         "Could not find $ADD_ON_MANAGER_REGISTER_METHOD_NAME(). " +
                 "The installed Morphe Patches version is not compatible with this add-on."

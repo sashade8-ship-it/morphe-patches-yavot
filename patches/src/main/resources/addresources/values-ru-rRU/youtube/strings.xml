@@ -30,6 +30,7 @@
     <string name="morphe_yandex_vot_started">Перевод запущен</string>
     <string name="morphe_yandex_vot_stopped">Перевод остановлен</string>
     <string name="morphe_yandex_vot_playback_error">Не удалось воспроизвести аудио перевода</string>
+    <string name="morphe_yandex_vot_unavailable_live">Перевод недоступен для прямых трансляций</string>
     <string name="morphe_yandex_vot_unavailable_too_long">Видео слишком длинное для перевода (макс. 4 часа)</string>
     <string name="morphe_yandex_vot_unavailable_same_language">Аудио видео уже на языке перевода</string>
     <string name="morphe_yandex_vot_stream_waiting">Ожидание… ~%s</string>
@@ -39,6 +40,8 @@
     <string name="morphe_yandex_vot_stream_ready">Перевод готов, воспроизведение</string>
     <string name="morphe_yandex_vot_time_sec">%d сек</string>
     <string name="morphe_yandex_vot_time_min">%d мин</string>
+    <string name="dualvot_yandex_button_time_seconds">%dс</string>
+    <string name="dualvot_yandex_button_time_minutes">%dм</string>
     <string name="morphe_yandex_vot_live_voices_unavailable">Живые голоса недоступны, используются стандартные</string>
     <string name="morphe_yandex_vot_lang_auto">Автоопределение</string>
     <string name="morphe_yandex_vot_oauth_token_title">Яндекс OAuth токен</string>
