@@ -1,3 +1,9 @@
+## [1.1.2](https://github.com/sashade8-ship-it/morphe-patches-yavot/compare/v1.1.1...v1.1.2) (2026-08-09)
+
+### 🐛 Bug Fixes
+
+* restore localized Yandex volume labels ([c1ea43e](https://github.com/sashade8-ship-it/morphe-patches-yavot/commit/c1ea43ef71b1a5c116eaf496626e40b0a580a421))
+
 ## [1.1.1](https://github.com/sashade8-ship-it/morphe-patches-yavot/compare/v1.1.0...v1.1.1) (2026-08-09)
 
 ### 🐛 Bug Fixes
