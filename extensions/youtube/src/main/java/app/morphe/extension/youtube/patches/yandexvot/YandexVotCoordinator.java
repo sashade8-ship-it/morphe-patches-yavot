@@ -1,29 +1,27 @@
 /*
- * Mutual-exclusion glue between the Yandex VoT bundle and the built-in voice-over translation.
+ * Mutual-exclusion glue between the Yandex VoT add-on and Morphe's built-in
+ * voice-over translation. This file deliberately uses only the public host API.
  */
 
 package app.morphe.extension.youtube.patches.yandexvot;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import app.morphe.extension.youtube.patches.voiceovertranslation.VoiceOverTranslationPatch;
 
-/**
- * Keeps the official and Yandex voice-over translation engines mutually exclusive: only one
- * translated audio track can play at a time, so starting one engine stops the other.
- * <p>
- * Each engine still owns its own video-id, video-time and playback-state wiring independently
- * through {@link app.morphe.extension.youtube.addon.AddOnApi} / its own injection points; this
- * class only adds the cross-engine stop signal on top of that.
- */
+/** Keeps the two translated audio sessions mutually exclusive without a custom AddOnApi. */
 @SuppressWarnings("unused")
 public final class YandexVotCoordinator {
+    private static final AtomicBoolean callbackRegistered = new AtomicBoolean(false);
 
-    /** Injection point, called once from {@link YandexVotAddOn#register()}. */
+    /** Registers the official state callback once when the add-on is loaded. */
     public static void register() {
+        if (!callbackRegistered.compareAndSet(false, true)) return;
         VoiceOverTranslationPatch.addOnTranslationStateChangeCallback(
                 YandexVotCoordinator::onOfficialStateChanged);
     }
 
-    /** Called by {@link YandexVoiceOverTranslationPatch#toggleTranslation()} right before it starts. */
+    /** Called immediately before Yandex starts its own translated-audio session. */
     static void deactivateOfficialBeforeStarting() {
         VoiceOverTranslationPatch.deactivateTranslation();
     }

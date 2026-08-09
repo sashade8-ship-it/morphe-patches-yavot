@@ -22,7 +22,6 @@ import app.morphe.util.forEachChildElement
 import app.morphe.util.getNode
 import app.morphe.util.inputStreamFromBundledResource
 import com.android.tools.smali.dexlib2.AccessFlags
-import com.android.tools.smali.dexlib2.iface.value.IntEncodedValue
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
@@ -37,7 +36,8 @@ private const val ADD_ON_MANAGER_REGISTER_METHOD_NAME = "registerAddOns"
 private const val ADD_ON_API_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/youtube/addon/AddOnApi;"
 
-private const val REQUIRED_ADD_ON_API_VERSION = 1
+private const val VOICE_OVER_TRANSLATION_PATCH_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/youtube/patches/voiceovertranslation/VoiceOverTranslationPatch;"
 
 private const val PLAYER_OVERLAY_BUTTON_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/youtube/videoplayer/PlayerOverlayButton;"
@@ -47,26 +47,24 @@ private const val REQUIRED_CUSTOM_PLAYER_OVERLAY_BUTTON_DESCRIPTOR =
             "Landroid/view/View\$OnClickListener;Landroid/view/View\$OnLongClickListener;)Landroid/widget/ImageView;"
 
 /**
- * Validates the complete host surface this add-on relies on before its registration call is
- * inserted.  The coordinator deliberately remains in the base bundle: shipping a replacement
- * here would create two competing owners for the official and Yandex engines.
+ * Validates the exact public host surface this add-on invokes before its registration call is
+ * inserted. This stays fail-closed: a matching class name alone does not make a host compatible.
  */
-private fun BytecodePatchContext.requireCompatibleVoiceOverCoordinator() {
+private fun BytecodePatchContext.requireCompatibleHost() {
     val api = mutableClassDefByOrNull(ADD_ON_API_CLASS_DESCRIPTOR)
-        ?: throw PatchException("Incompatible host: AddOnApi v$REQUIRED_ADD_ON_API_VERSION is missing.")
+        ?: throw PatchException("Incompatible host: AddOnApi is missing.")
 
     val requiredMethods = setOf(
-        "registerVoiceOverEngine(Ljava/lang/String;Ljava/lang/Runnable;)Z",
-        "activateVoiceOverEngine(Ljava/lang/String;)Z",
-        "deactivateVoiceOverEngine(Ljava/lang/String;)Z",
-        "getActiveVoiceOverEngineId()Ljava/lang/String;",
-        "addVoiceOverEngineListener(Ljava/util/function/Consumer;)V",
         "addNewVideoStartedListener(Ljava/lang/Runnable;)V",
         "addPlayerOverlayButtonsListener(Ljava/util/function/Consumer;)V",
         "addLegacyPlayerControlsListener(Ljava/util/function/Consumer;)V",
         "addVideoIdListener(Ljava/util/function/Consumer;)V",
         "addVideoTimeListener(Ljava/util/function/LongConsumer;)V",
         "addVideoStateListener(Ljava/util/function/Consumer;)V",
+        "createLegacyButton(Ljava/lang/String;Landroid/view/View;Ljava/lang/String;" +
+                "Lapp/morphe/extension/shared/settings/BooleanSetting;" +
+                "Landroid/view/View\$OnClickListener;Landroid/view/View\$OnLongClickListener;)" +
+                "Lapp/morphe/extension/youtube/videoplayer/LegacyPlayerControlButton;",
     )
     val incompatibleMethods = requiredMethods.filter { requiredDescriptor ->
         val method = api.methods.firstOrNull {
@@ -76,20 +74,32 @@ private fun BytecodePatchContext.requireCompatibleVoiceOverCoordinator() {
                 !AccessFlags.PUBLIC.isSet(method.accessFlags) ||
                 !AccessFlags.STATIC.isSet(method.accessFlags)
     }
-    val apiVersion = api.fields.singleOrNull { field ->
-        field.name == "API_VERSION" && field.type == "I"
-    }
-    val hasExactApiVersion = apiVersion != null &&
-            AccessFlags.PUBLIC.isSet(apiVersion.accessFlags) &&
-            AccessFlags.STATIC.isSet(apiVersion.accessFlags) &&
-            AccessFlags.FINAL.isSet(apiVersion.accessFlags) &&
-            (apiVersion.initialValue as? IntEncodedValue)?.value == REQUIRED_ADD_ON_API_VERSION
-    if (!hasExactApiVersion || incompatibleMethods.isNotEmpty()) {
+    if (incompatibleMethods.isNotEmpty()) {
         throw PatchException(
-            "Incompatible host: requires AddOnApi v$REQUIRED_ADD_ON_API_VERSION with the " +
-                    "public static VoiceOverEngineCoordinator contract and public static final " +
-                    "API_VERSION=$REQUIRED_ADD_ON_API_VERSION; invalid " +
-                    incompatibleMethods.sorted().joinToString().ifEmpty { "API_VERSION" }
+            "Incompatible host: requires public static AddOnApi hooks; invalid " +
+                    incompatibleMethods.sorted().joinToString()
+        )
+    }
+
+    val officialTranslation = mutableClassDefByOrNull(VOICE_OVER_TRANSLATION_PATCH_CLASS_DESCRIPTOR)
+        ?: throw PatchException("Incompatible host: VoiceOverTranslationPatch is missing.")
+    val requiredOfficialMethods = setOf(
+        "addOnTranslationStateChangeCallback(Ljava/lang/Runnable;)V",
+        "isSessionEnabled()Z",
+        "deactivateTranslation()V",
+    )
+    val incompatibleOfficialMethods = requiredOfficialMethods.filter { requiredDescriptor ->
+        val method = officialTranslation.methods.firstOrNull {
+            it.name + "(" + it.parameters.joinToString("") + ")" + it.returnType == requiredDescriptor
+        }
+        method == null ||
+                !AccessFlags.PUBLIC.isSet(method.accessFlags) ||
+                !AccessFlags.STATIC.isSet(method.accessFlags)
+    }
+    if (incompatibleOfficialMethods.isNotEmpty()) {
+        throw PatchException(
+            "Incompatible host: requires public static VoiceOverTranslationPatch hooks; invalid " +
+                    incompatibleOfficialMethods.sorted().joinToString()
         )
     }
 
@@ -148,12 +158,14 @@ internal fun registerAddOn(registrationMethodDescriptor: String) {
             """
         )
 
-    context.requireCompatibleVoiceOverCoordinator()
+    context.requireCompatibleHost()
 
     val registerMethod = addOnManagerClass.methods.firstOrNull {
         it.name == ADD_ON_MANAGER_REGISTER_METHOD_NAME &&
                 it.returnType == "V" &&
-                it.parameters.isEmpty()
+                it.parameters.isEmpty() &&
+                AccessFlags.PUBLIC.isSet(it.accessFlags) &&
+                AccessFlags.STATIC.isSet(it.accessFlags)
     } ?: throw PatchException(
         "Could not find $ADD_ON_MANAGER_REGISTER_METHOD_NAME(). " +
                 "The installed Morphe Patches version is not compatible with this add-on."

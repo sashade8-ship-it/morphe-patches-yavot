@@ -53,17 +53,15 @@ fingerprint of this bundle.
 
 ## Compatibility gate
 
-This development branch is **not compatible with stock upstream Morphe Patches**. Before it
-changes an APK, the patch verifies `AddOnApi.API_VERSION` and the complete v1 coordinator surface:
-`registerVoiceOverEngine`, activation/deactivation, active-owner lookup, engine-state listener,
-and the player/video hook methods. Runtime registration checks API version 1 again before any
-listener or engine registration.
+This branch is compatible with official Morphe Patches `v1.40.0-dev.1`. Before it changes an APK,
+the patch verifies the exact public static `AddOnManager`/generic `AddOnApi` hooks it uses and the
+official `VoiceOverTranslationPatch` callbacks it invokes. It fails closed before adding YaVoT
+registration when any required signature is absent.
 
-No published upstream base currently satisfies this contract. The coordinator remains exclusively
-in the host bundle; this add-on does not embed or replace it. The upstream AddOnApi PR head
-`6d2cb3e30f78be25b29225d509a0e692fb2c8a07` lacks the coordinator and is rejected. Release and
-host-integrated build verification remain blocked until a minimal coordinator commit rebased on
-that head is published; its full immutable SHA can then be pinned here.
+YaVoT coordinates directly with the official translation implementation: immediately before
+Yandex starts it deactivates the official session, and the one-time official state callback cancels
+Yandex when the official session becomes active. This requires no custom AddOnApi version or
+engine-owner API.
 
 ## Build
 
@@ -84,6 +82,9 @@ extension code compiles against the compiled extension classes of morphe-patches
 
 ```
 ../morphe-patches/gradlew :extensions:youtube:compileReleaseKotlin :extensions:youtube:compileReleaseJavaWithJavac
+
+# Or use another built compatible host checkout without changing this repository:
+./gradlew :extensions:youtube:compileReleaseJavaWithJavac -PbaseExtensionsDir=../morphe-official-1.40-test/extensions
 ```
 
 ## What is bundled

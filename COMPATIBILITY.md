@@ -1,24 +1,20 @@
-# YaVoT coordinator compatibility
+# YaVoT compatibility
 
-No published upstream base currently satisfies this add-on's public coordinator contract. This
-branch is therefore not compatible with stock upstream Morphe Patches.
+This add-on targets official Morphe Patches `v1.40.0-dev.1`
+(`0b2ac378feb6b64fb7f1125abdccb0ff7d9125ff`). It does not require an unpublished AddOnApi
+version or a custom engine coordinator.
 
-The add-on's patch-time gate requires an encoded dex `public static final int API_VERSION = 1`
-and these exact `public static` signatures:
+Before it inserts YaVoT registration, the patch checks for exact public static methods:
 
-- `registerVoiceOverEngine(String, Runnable): boolean`
-- `activateVoiceOverEngine(String): boolean`
-- `deactivateVoiceOverEngine(String): boolean`
-- `getActiveVoiceOverEngineId(): String`
-- `addVoiceOverEngineListener(Consumer): void`
-- `addNewVideoStartedListener(Runnable): void`
-- player-overlay, legacy-control, video-id, video-time, and video-state listener registration
+- `AddOnManager.registerAddOns(): void`;
+- the AddOnApi hooks it calls: player-overlay, legacy-control, new-video, video-id, video-time,
+  and video-state listener registration;
+- `VoiceOverTranslationPatch.addOnTranslationStateChangeCallback(Runnable): void`;
+- `VoiceOverTranslationPatch.isSessionEnabled(): boolean`;
+- `VoiceOverTranslationPatch.deactivateTranslation(): void`;
+- the public static player-overlay button factory YaVoT invokes.
 
-It also requires `AddOnManager.registerAddOns(): void`. If any required member is absent, the
-patch aborts before inserting YaVoT registration or mutating the target APK. The coordinator is
-owned by the base bundle and must never be duplicated in this add-on.
-
-`6d2cb3e30f78be25b29225d509a0e692fb2c8a07`, the current upstream AddOnApi PR head, does not
-provide this coordinator contract and is intentionally rejected. Release and host-integrated
-build validation are blocked until a minimal coordinator commit rebased on that head is published.
-Only then should its full immutable SHA be added as the compatible host pin.
+If a method is absent or not public static, patching aborts before YaVoT registration is inserted.
+At runtime YaVoT directly deactivates the official translation before Yandex starts; the official
+state callback cancels Yandex if the official session becomes active. No URLs, video identifiers,
+credentials, or network responses are logged by this coordination layer.

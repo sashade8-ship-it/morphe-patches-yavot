@@ -1,8 +1,12 @@
 import com.android.build.api.dsl.ApplicationExtension
 
-// Compile against the published compatible host extension classes; nothing here is shipped.
-// A host satisfying COMPATIBILITY.md must be built first.
-val baseExtDir = rootProject.file("../morphe-patches/extensions")
+// Compile against the compatible host extension classes; nothing here is shipped.
+// A host satisfying COMPATIBILITY.md must be built first. The property permits an isolated
+// official-source verification checkout without changing the normal sibling convention.
+val baseExtensionsDir = providers.gradleProperty("baseExtensionsDir").orNull
+    ?.takeIf(String::isNotBlank)
+    ?: "../morphe-patches/extensions"
+val baseExtDir = rootProject.file(baseExtensionsDir)
 val baseClassesStaging = layout.buildDirectory.dir("base-classes-staging")
 
 // AGP rejects raw classes.jar via compileOnly(files()), so we unpack lib jars +
