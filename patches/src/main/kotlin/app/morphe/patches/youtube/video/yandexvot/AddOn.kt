@@ -1,4 +1,12 @@
 /*
+ * Copyright (C) 2026 YaVoT maintainers (sashade8-ship-it)
+ *
+ * This file is part of YaVoT, an independent GPLv3 add-on compatible with
+ * Morphe Patches. It is a substantially modified add-on integration layer
+ * maintained by the YaVoT maintainers as of 2026-08-09.
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
  * Add-on support code for the Yandex VoT bundle.
  *
  * An add-on bundle is loaded by the patcher in its own class loader, so it cannot reference

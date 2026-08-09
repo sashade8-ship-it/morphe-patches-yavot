@@ -2,13 +2,13 @@ group = "app.morphe.thirdparty.yavot"
 
 patches {
     about {
-        name = "Morphe Yandex VoT"
-        description = "Yandex voice-over translation add-on for Morphe Patches. " +
-                "Requires patching with Morphe official patches"
-        source = "git@github.com:MarcaDian/morphe-patches-yavot.git"
-        author = "MarcaDian"
-        contact = "na"
-        website = "https://github.com/MarcaDian/morphe-patches-yavot"
+        name = "YaVoT"
+        description = "Independent Yandex voice-over translation add-on, compatible with Morphe Patches. " +
+                "Requires patching alongside the official Morphe bundle."
+        source = "https://github.com/sashade8-ship-it/morphe-patches-yavot"
+        author = "YaVoT maintainers (sashade8-ship-it); original YaVoT: MarcaDian; ports: Jav1x and anddea"
+        contact = "https://github.com/sashade8-ship-it/morphe-patches-yavot/issues"
+        website = "https://github.com/sashade8-ship-it/morphe-patches-yavot"
         license = "GNU General Public License v3.0, with additional GPL section 7 requirements"
     }
 }
@@ -30,6 +30,19 @@ dependencies {
 }
 
 tasks {
+    // The MPP is a distributable GPL work. Keep its notices with the artifact rather than
+    // relying on the source checkout or a GitHub release page to provide them separately.
+    withType<org.gradle.jvm.tasks.Jar>().configureEach {
+        from(rootProject.file("LICENSE")) {
+            into("META-INF")
+            rename { "LICENSE" }
+        }
+        from(rootProject.file("NOTICE")) {
+            into("META-INF")
+            rename { "NOTICE" }
+        }
+    }
+
     named("sourcesJar") {
         enabled = false
     }

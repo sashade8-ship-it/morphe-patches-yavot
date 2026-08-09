@@ -1,4 +1,10 @@
 /*
+ * Copyright (C) 2026 YaVoT maintainers (sashade8-ship-it)
+ *
+ * This file is part of YaVoT, an independent GPLv3 add-on compatible with
+ * Morphe Patches.
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
  * Mutual-exclusion glue between the Yandex VoT add-on and Morphe's built-in
  * voice-over translation. This file deliberately uses only the public host API.
  */

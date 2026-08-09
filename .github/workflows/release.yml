@@ -14,41 +14,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout yavot
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           path: morphe-patches-yavot
           fetch-depth: 0
 
       - name: Checkout base morphe-patches
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: MorpheApp/morphe-patches
-          # Temporary: the add-on hooks this bundle attaches to are not merged yet.
-          # Remove once https://github.com/MorpheApp/morphe-patches/pull/2295 is released.
-          ref: feat/add-on-support
+          # Official v1.40.0-dev.1; immutable compatibility target documented in COMPATIBILITY.md.
+          ref: 0b2ac378feb6b64fb7f1125abdccb0ff7d9125ff
           path: morphe-patches
 
       - name: Checkout morphe-patcher
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: MorpheApp/morphe-patcher
+          ref: 026b0b762932ff13cb7923d713c6482fe73d24d6
           path: morphe-patcher
 
       - name: Checkout morphe-patches-library
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: MorpheApp/morphe-patches-library
-          ref: dev
+          ref: 0c2d15c76ee12cb1d8917fc108c424c2bfd1ffc0
           path: morphe-patches-library
 
       - name: Setup Java
-        uses: actions/setup-java@v5.6.0
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
           distribution: 'temurin'
           java-version: '21'
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 'lts/*'
 

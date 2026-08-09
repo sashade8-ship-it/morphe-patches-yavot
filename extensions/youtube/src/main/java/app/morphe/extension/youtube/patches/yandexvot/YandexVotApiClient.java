@@ -9,6 +9,7 @@
  * - anddea (https://github.com/anddea)
  *
  * Licensed under the GNU General Public License v3.0.
+ * Substantially modified by: YaVoT maintainers (sashade8-ship-it), 2026-08-09
  *
  * ------------------------------------------------------------------------
  * GPLv3 Section 7 – Attribution Notice

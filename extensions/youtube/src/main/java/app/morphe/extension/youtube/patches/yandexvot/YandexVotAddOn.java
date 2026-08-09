@@ -1,5 +1,9 @@
 /*
- * Add-on entry point of the Yandex VoT bundle.
+ * Copyright (C) 2026 YaVoT maintainers (sashade8-ship-it)
+ *
+ * Add-on entry point of the YaVoT bundle. Substantially modified by the
+ * YaVoT maintainers on 2026-08-09.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 package app.morphe.extension.youtube.patches.yandexvot;

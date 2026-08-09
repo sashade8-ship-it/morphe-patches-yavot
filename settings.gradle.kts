@@ -1,4 +1,4 @@
-rootProject.name = "morphe-patches-yavot"
+rootProject.name = "yavot-patches"
 
 pluginManagement {
     repositories {

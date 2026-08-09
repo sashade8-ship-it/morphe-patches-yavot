@@ -10,6 +10,7 @@
  *
  * Ported to morphe-patches: https://github.com/MorpheApp/morphe-patches
  * Modified by: Jav1x (https://github.com/Jav1x)
+ * Substantially modified by: YaVoT maintainers (sashade8-ship-it), 2026-08-09
  *
  * Licensed under the GNU General Public License v3.0.
  *
