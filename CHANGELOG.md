@@ -1,3 +1,9 @@
+## [1.1.3](https://github.com/sashade8-ship-it/morphe-patches-yavot/compare/v1.1.2...v1.1.3) (2026-08-22)
+
+### 🐛 Bug Fixes
+
+* restore YaVoT on Morphe dev.15+ ([8a742e0](https://github.com/sashade8-ship-it/morphe-patches-yavot/commit/8a742e0da6bda00d090c7cec4e924744623760e1))
+
 ## [1.1.2](https://github.com/sashade8-ship-it/morphe-patches-yavot/compare/v1.1.1...v1.1.2) (2026-08-09)
 
 ### 🐛 Bug Fixes
