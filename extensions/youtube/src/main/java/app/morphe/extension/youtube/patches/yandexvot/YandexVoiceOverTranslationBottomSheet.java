@@ -36,7 +36,6 @@ import android.widget.TextView;
 import java.lang.ref.WeakReference;
 
 import app.morphe.extension.shared.Logger;
-import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.IntegerSetting;
 import app.morphe.extension.shared.settings.preference.SeekBarPreference;
 import app.morphe.extension.shared.settings.preference.SeekBarPreference.SeekBarConfig;
@@ -71,7 +70,7 @@ public class YandexVoiceOverTranslationBottomSheet {
             }
 
             final int bgColor = getDialogBackgroundColor();
-            final int fgColor = Utils.getAppForegroundColor();
+            final int fgColor = YandexThemeCompat.getAppForegroundColor();
 
             // Create main layout.
             SheetBottomDialog.DraggableLinearLayout mainLayout =
@@ -186,7 +185,7 @@ public class YandexVoiceOverTranslationBottomSheet {
             statusText.setTextColor(Color.parseColor("#4CAF50"));
         } else {
             statusText.setText(str("morphe_yandex_vot_stopped"));
-            statusText.setTextColor(Utils.getAppForegroundColor());
+            statusText.setTextColor(YandexThemeCompat.getAppForegroundColor());
         }
     }
 
@@ -228,7 +227,7 @@ public class YandexVoiceOverTranslationBottomSheet {
                                          String label,
                                          IntegerSetting setting,
                                          java.util.function.Consumer<Integer> onChanged) {
-        final int fgColor = Utils.getAppForegroundColor();
+        final int fgColor = YandexThemeCompat.getAppForegroundColor();
         final int initialValue = setting.get();
         final SeekBarConfig config = SeekBarPreference.configFor(setting);
         if (config == null) {
@@ -326,7 +325,7 @@ public class YandexVoiceOverTranslationBottomSheet {
     private static Button createMinusPlusButton(Context context, boolean isPlus) {
         Button button = new Button(context, null, 0);
         button.setText(isPlus ? "+" : "−");
-        button.setTextColor(Utils.getAppForegroundColor());
+        button.setTextColor(YandexThemeCompat.getAppForegroundColor());
         button.setTextSize(18);
         button.setAllCaps(false);
         button.setGravity(Gravity.CENTER);
@@ -352,7 +351,7 @@ public class YandexVoiceOverTranslationBottomSheet {
         // Label
         TextView labelText = new TextView(context);
         labelText.setText(str("morphe_yandex_vot_voice_style_title"));
-        labelText.setTextColor(Utils.getAppForegroundColor());
+        labelText.setTextColor(YandexThemeCompat.getAppForegroundColor());
         labelText.setTextSize(14);
         labelText.setTypeface(Typeface.DEFAULT_BOLD);
         labelText.setGravity(Gravity.START);
@@ -419,7 +418,7 @@ public class YandexVoiceOverTranslationBottomSheet {
     private static Button createSegmentedButton(Context context, String text) {
         Button button = new Button(context, null, 0);
         button.setText(text);
-        button.setTextColor(Utils.getAppForegroundColor());
+        button.setTextColor(YandexThemeCompat.getAppForegroundColor());
         button.setTextSize(13);
         button.setAllCaps(false);
         button.setGravity(Gravity.CENTER);
@@ -457,7 +456,7 @@ public class YandexVoiceOverTranslationBottomSheet {
         TextView titleView = new TextView(context);
         titleView.setText(title);
         titleView.setTextSize(14);
-        titleView.setTextColor(Utils.getAppForegroundColor());
+        titleView.setTextColor(YandexThemeCompat.getAppForegroundColor());
         LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         row.addView(titleView, titleParams);
@@ -465,9 +464,9 @@ public class YandexVoiceOverTranslationBottomSheet {
         Switch switchView = new Switch(context);
         switchView.setChecked(setting.get());
         switchView.getThumbDrawable().setColorFilter(
-                new PorterDuffColorFilter(Utils.getAppForegroundColor(), PorterDuff.Mode.SRC_ATOP));
+                new PorterDuffColorFilter(YandexThemeCompat.getAppForegroundColor(), PorterDuff.Mode.SRC_ATOP));
         switchView.getTrackDrawable().setColorFilter(
-                new PorterDuffColorFilter(Utils.getAppForegroundColor(), PorterDuff.Mode.SRC_ATOP));
+                new PorterDuffColorFilter(YandexThemeCompat.getAppForegroundColor(), PorterDuff.Mode.SRC_ATOP));
         switchView.setOnCheckedChangeListener((v, isChecked) -> {
             setting.save(isChecked);
             if (onChanged != null) onChanged.run();
